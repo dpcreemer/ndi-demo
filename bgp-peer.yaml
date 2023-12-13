@@ -1,6 +1,6 @@
 ---
 - name: Core-A1
-  hosts: core_a1
+  hosts: rtp-core-a1.mgmt.rtp.lab
   gather_facts: no
 
   tasks:
@@ -14,7 +14,7 @@
       loop: ["172.21.96.1", "172.21.96.5"]
 
 - name: Core-A2
-  hosts: core_a2
+  hosts: rtp-core-a2.mgmt.rtp.lab
   gather_facts: no
 
   tasks:
@@ -28,7 +28,7 @@
       loop: ["172.21.96.3", "172.21.96.7"]
 
 - name: Core-B1
-  hosts: core_b1
+  hosts: rtp-core-b1.mgmt.rtp.lab
   gather_facts: no
 
   tasks:
@@ -53,7 +53,7 @@
       loop: ["198.18.224.9", "198.18.224.11"]
 
 - name: Core-B2
-  hosts: core_b2
+  hosts: rtp-core-b2.mgmt.rtp.lab
   gather_facts: no
 
   tasks:
