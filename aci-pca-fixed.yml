@@ -4,7 +4,7 @@
   hosts: bloom-aci.rtp.lab
   connection: local
   vars: 
-    change_file: "/var/lib/awx/output/{{ change_name }}_pc.json"
+    change_file: "{{ change_name }}_pc.json"
     tenant: ndi-demo
     run_in_check_mode: true
 
@@ -82,7 +82,7 @@
   hosts: ndi.prod.rtp.lab
   gather_facts: false
   vars: 
-    change_file: "/var/lib/awx/output/{{ change_name }}_pc.json"
+    change_file: "{{ change_name }}_pc.json"
 
   tasks:
     - name: Delete Pre-Change Analysis if it already exists

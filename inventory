@@ -1,0 +1,28 @@
+rtp:
+  children: 
+    aci:
+      hosts:
+        bloom-aci.rtp.lab:
+        chi-aci.rtp.lab:
+    nxos:
+      hosts: 
+        rtp-core-a1.mgmt.rtp.lab:
+        rtp-core-a2.mgmt.rtp.lab:
+        rtp-core-b1.mgmt.rtp.lab:
+        rtp-core-b2.mgmt.rtp.lab:
+      vars:
+        ansible_connection: ansible.netcommon.httpapi
+        ansible_network_os: cisco.nxos.nxos
+        ansible_httpapi_use_ssl: true
+        ansible_httpapi_validate_certs: false
+    nd:
+      hosts:
+        ndi.prod.rtp.lab:
+        ndfc-lan.prod.rtp.lab:
+        ndo.prod.rtp.lab:
+      vars:
+        ansible_connection: ansible.netcommon.httpapi
+        ansible_network_os: cisco.nd.nd
+        ansible_httpapi_validate_certs: false
+        ansible_httpapi_use_ssl: true
+        ansible_httpapi_use_prox: true
