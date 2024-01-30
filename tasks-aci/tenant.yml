@@ -1,0 +1,33 @@
+---
+# tasks file for tenant
+# VARS:
+#   prechange_file - Filename for ACI changes to be used for Prechange Analysis
+#   tenant - Tenant name
+#   tenant_alias - Tenant name alias
+#   tenant_description - Tenant Description
+#   vrf - VRF name
+#   vrf_description - VRF description
+
+- name: Setup APIC Connectivity
+  ansible.builtin.set_fact:
+    auth: &auth
+      host: "{{ inventory_hostname }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      validate_certs: false
+      use_ssl: true
+      output_path: "{{ prechange_file }}"
+
+- name: Create Tenant
+  cisco.aci.aci_tenant:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    name_alias: "{{ tenant_alias }}"
+    description: "{{ tenant_description }}"
+
+- name: Create VRF
+  cisco.aci.aci_vrf:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    vrf: "{{ vrf }}"
+    description: "{{ vrf_description }}"

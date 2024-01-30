@@ -1,0 +1,78 @@
+---
+- name: Core-A1
+  hosts: rtp-core-a1.mgmt.rtp.lab
+  gather_facts: no
+
+  tasks:
+    - name: "Manage Peers"
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "65000"
+          neighbors:
+            - neighbor_address: "{{ item }}"
+              shutdown: "{{ shutdown }}"
+      loop: ["172.21.96.1", "172.21.96.5"]
+
+- name: Core-A2
+  hosts: rtp-core-a2.mgmt.rtp.lab
+  gather_facts: no
+
+  tasks:
+    - name: "Manage Peers"
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "65000"
+          neighbors:
+            - neighbor_address: "{{ item }}"
+              shutdown: "{{ shutdown }}"
+      loop: ["172.21.96.3", "172.21.96.7"]
+
+- name: Core-B1
+  hosts: rtp-core-b1.mgmt.rtp.lab
+  gather_facts: no
+
+  tasks:
+    - name: "Manage ACI Peers"
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "65000"
+          neighbors:
+            - neighbor_address: "{{ item }}"
+              shutdown: "{{ shutdown }}"
+      loop: ["198.18.226.137", "198.18.226.141"]
+
+    - name: "Manage VXLAN Peers"
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "65000"
+          vrfs:
+            - vrf: NIR-Chaos
+              neighbors:
+                - neighbor_address: "{{ item }}"
+                  shutdown: "{{ shutdown }}"
+      loop: ["198.18.224.9", "198.18.224.11"]
+
+- name: Core-B2
+  hosts: rtp-core-b2.mgmt.rtp.lab
+  gather_facts: no
+
+  tasks:
+    - name: "Manage ACI Peers"
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "65000"
+          neighbors:
+            - neighbor_address: "{{ item }}"
+              shutdown: "{{ shutdown }}"
+      loop: ["198.18.226.139", "198.18.226.143"]
+
+    - name: "Manage VXLAN Peers"
+      cisco.nxos.nxos_bgp_global:
+        config:
+          as_number: "65000"
+          vrfs:
+            - vrf: NIR-Chaos
+              neighbors:
+                - neighbor_address: "{{ item }}"
+                  shutdown: "{{ shutdown }}"
+      loop: ["198.18.224.13", "198.18.224.15"]

@@ -1,0 +1,101 @@
+---
+# ACI Network Playbook - Pre-change Analysis 
+- name: Create ACI Network (EPG/BD) and all dependencies
+  hosts: bloom-aci.rtp.lab
+  connection: local
+  vars: 
+    change_file: "/var/lib/awx/output/{{ change_name }}_pc.json"
+    tenant: ndi-demo
+    run_in_check_mode: true
+
+  tasks: 
+  - name: Delete the change file if it exists
+    ansible.builtin.file:
+      path: "{{ change_file }}"
+      state: absent
+
+  - name: Create BD and its dependencies
+    ansible.builtin.import_tasks: tasks-aci/bd.yml
+    vars: 
+      vrf: demo
+      bd: dev
+      description: Networks for development environment
+      gateway: 198.19.53.129
+      mask: 25
+      scope: public
+      l3outs: [core]
+
+  - name: Create EPGs
+    ansible.builtin.include_tasks: tasks-aci/epg.yml
+    vars:
+      ap: dev
+      epg: item.epg
+      alias: 
+      description: item.description
+      bd: dev
+      vmm_domain: hx-sc-dvs
+    loop:
+      - epg: web
+        description: Web Servers for Dev
+      - epg: app
+        description: Application Servers for Dev
+      - epg: db
+        description: Database Servers for Dev
+
+  - name: Create a contract for the App EPG
+    ansible.builtin.import_tasks: tasks-aci/contract.yml
+    vars:
+      contract: dev-app
+      alias:
+      description: Dev Application EPG access
+      filters:
+        - tcp-1972
+        - arp
+        - icmp
+      providers: 
+        - ap: dev
+          epg: app
+      consumers:
+        - ap: dev
+          epg: web
+
+  - name: Create a contract for the DB EPG
+    ansible.builtin.import_tasks: tasks-aci/contract.yml
+    vars:
+      contract: dev-db
+      alias:
+      description: Dev Database EPG access
+      filters:
+        - mysql
+        - arp
+        - icmp
+      providers: 
+        - ap: dev
+          epg: db
+      consumers:
+        - ap: dev
+          epg: app
+        - ap: dev
+          epg: web
+
+- name: Create Pre-Change Analysis in NDI
+  hosts: ndi.prod.rtp.lab
+  gather_facts: false
+  vars: 
+    change_file: "/var/lib/awx/output/{{ change_name }}_pc.json"
+
+  tasks:
+    - name: Delete Pre-Change Analysis if it already exists
+      cisco.nd.nd_pcv:
+        ig_name: default
+        site_name: Bloomington
+        name: "{{ change_name }}"
+        state: absent
+
+    - name: Create a new Pre-Change Analysis from file
+      cisco.nd.nd_pcv:
+        ig_name: default
+        site_name: Bloomington
+        name: "{{ change_name }}"
+        file: "{{ change_file }}"
+        state: present

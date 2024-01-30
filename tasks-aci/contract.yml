@@ -1,0 +1,66 @@
+---
+# tasks file for Contract
+# VARS: 
+#   change_file - Filename for ACI changes to document Change made to ACI
+#   tenant - Tenant name
+#   contract - Contract name
+#   alias - Name Alian for contract
+#   description - Description for contract
+#   filter - list of filters to apply to the contract.  Each list member is the name of a filter.
+
+- name: Setup APIC Connectivity
+  ansible.builtin.set_fact:
+    auth: &auth
+      host: "{{ ansible_host }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      output_path: "{{ change_file }}"
+
+- name: "{{ 'Create Contract - ' + contract }}"
+  cisco.aci.aci_contract:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    contract: "{{ contract }}"
+    name_alias: "{{ alias }}"
+    description: "{{ description }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: "{{ 'Create Default Contract Subject for ' + contract }}"
+  cisco.aci.aci_contract_subject:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    contract: "{{ contract }}"
+    subject: default
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: "{{ 'Create filter for contract' + contract }}"
+  cisco.aci.aci_contract_subject_to_filter:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    contract: "{{ contract }}"
+    subject: default
+    filter: "{{ item }}"
+  loop: "{{ filters }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: Associate contract to provider EPG(s)
+  cisco.aci.aci_epg_to_contract:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    ap: "{{ item.ap }}"
+    epg: "{{ item.epg }}"
+    contract: "{{ contract }}"
+    contract_type: provider
+  loop: "{{ providers }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: Associate contract to consumer EPG(s)
+  cisco.aci.aci_epg_to_contract:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    ap: "{{ item.ap }}"
+    epg: "{{ item.epg }}"
+    contract: "{{ contract }}"
+    contract_type: consumer
+  loop: "{{ consumers }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"

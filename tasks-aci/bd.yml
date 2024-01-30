@@ -1,0 +1,48 @@
+---
+# tasks file for Bridge Domain
+# VARS: 
+#   change_name - Used to create change JSON files
+#   tenant - Tenant name
+#   bd - Bridge Domain name
+#   description - BD description
+#   vrf - VRF for BD
+#   gateway - SVI or Gateway address for the BD
+#   mask - Subnet mask for BD subnet
+#   scope - private/public subnet scope
+#   l3outs - List of L3Outs to associate with this BD
+
+- name: Setup APIC Connectivity
+  ansible.builtin.set_fact:
+    auth: &auth
+      host: "{{ ansible_host }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      output_path: "{{ change_file }}"
+
+- name: "Create BD: {{ bd }}"
+  cisco.aci.aci_bd:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    bd: "{{ bd }}"
+    description: "{{ description }}"
+    vrf: "{{ vrf }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: Add Subnet
+  cisco.aci.aci_bd_subnet:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    bd: "{{ bd }}"
+    gateway: "{{ gateway }}"
+    mask: "{{ mask }}"
+    scope: "{{ scope }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: Associate BD to L3Out
+  cisco.aci.aci_bd_to_l3out:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    bd: "{{ bd }}"
+    l3out: "{{ item }}"
+  loop: "{{ l3outs }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"

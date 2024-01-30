@@ -1,0 +1,51 @@
+---
+# tasks file for EPG
+# VARS: 
+#   change_file - Filename for ACI changes to document Change made to ACI
+#   tenant - Tenant name
+#   ap - Application Profile name
+#   epg - EPG name
+#   alias - EPG name alias
+#   description - EPG description
+#   bd - BD name used by EPG
+#   vmm_domain - VMM Domain used with the EPG
+#   contracts - List of contracts to be associated with the EPG. Each contract contains:
+#      contract - name of the contract
+#      direction - consumer/provider
+
+- name: Setup APIC Connectivity
+  ansible.builtin.set_fact:
+    auth: &auth
+      host: "{{ ansible_host }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      output_path: "{{ change_file }}"
+
+- name: "{{ 'Create AP, ' + ap + ' (If it does not exist)' }}"
+  cisco.aci.aci_ap:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    ap: "{{ ap }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: "{{ 'Create EPG, ' + ap + '/' + epg }}"
+  cisco.aci.aci_epg:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    ap: "{{ ap }}"
+    epg: "{{ epg }}"
+    name_alias: "{{ alias }}"
+    description: "{{ description }}"
+    bd: "{{ bd }}"
+  check_mode: "{{ run_in_check_mode | default(false) }}"
+
+- name: "{{ 'Associate ' + epg + ' to VMM Domain ' + vmm_domain }}"
+  cisco.aci.aci_epg_to_domain:
+    <<: *auth
+    tenant: "{{ tenant }}"
+    ap: "{{ ap }}"
+    epg: "{{ epg }}"
+    domain: "{{ vmm_domain }}"
+    domain_type: vmm
+    vm_provider: vmware
+  check_mode: "{{ run_in_check_mode | default(false) }}"
